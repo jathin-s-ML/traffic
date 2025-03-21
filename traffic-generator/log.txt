@@ -1,20 +1,20 @@
-[Request] Method: GET, URL: http://localhost:8080/collect, Body Size: 0 bytes
-[Response] Status: 200
-[Request] Method: GET, URL: http://localhost:8080/collect, Body Size: 0 bytes
-[Response] Status: 200
-[Request] Method: GET, URL: http://localhost:8080/collect, Body Size: 0 bytes
-[Response] Status: 200
 [Request] Method: DELETE, URL: http://localhost:8080/collect, Body Size: 0 bytes
+[Response] Status: 200
+[Request] Method: GET, URL: http://localhost:8080/collect, Body Size: 0 bytes
 [Response] Status: 200
 [Request] Method: DELETE, URL: http://localhost:8080/collect, Body Size: 0 bytes
 [Response] Status: 200
 [Request] Method: PUT, URL: http://localhost:8080/collect, Body Size: 59 bytes
 [Response] Status: 200
+[Request] Method: PUT, URL: http://localhost:8080/collect, Body Size: 58 bytes
+[Response] Status: 200
+[Request] Method: GET, URL: http://localhost:8080/collect, Body Size: 0 bytes
+[Response] Status: 200
 [Request] Method: POST, URL: http://localhost:8080/collect, Body Size: 58 bytes
+[Response] Status: 200
+[Request] Method: GET, URL: http://localhost:8080/collect, Body Size: 0 bytes
 [Response] Status: 200
 [Request] Method: DELETE, URL: http://localhost:8080/collect, Body Size: 0 bytes
 [Response] Status: 200
-[Request] Method: PUT, URL: http://localhost:8080/collect, Body Size: 58 bytes
-[Response] Status: 200
-[Request] Method: PUT, URL: http://localhost:8080/collect, Body Size: 58 bytes
+[Request] Method: GET, URL: http://localhost:8080/collect, Body Size: 0 bytes
 [Response] Status: 200
