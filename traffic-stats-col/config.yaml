@@ -1,0 +1,10 @@
+server:
+  port: "8080"
+
+database:
+  host: "localhost"
+  port: "5432"
+  user: "postgres"
+  password: "1234"
+  dbname: "traffic_data_prefinal"
+  sslmode: "disable"

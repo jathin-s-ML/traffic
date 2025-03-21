@@ -1,0 +1,10 @@
+TRffIC-GENERATOR -
+
+first run dockerfile of traffic-stats-collector
+docker run --rm --name traffic-stats-collector -p 8080:8080 traffic-stats-collector
+
+then run the dockerfile of traffic-generator
+docker run --rm --name traffic-generator --network="host" traffic-generator
+
+to run the traffic_generator_test.go use
+go test -v ./...

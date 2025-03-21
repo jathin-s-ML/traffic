@@ -1,0 +1,135 @@
+
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"gopkg.in/yaml.v2"
+	"math/rand"
+	"net/http"
+	"os"
+	"strconv"
+	"sync"
+	"time"
+)
+
+// Config structure for YAML configuration
+type Config struct {
+	NoOfAPI      int    `yaml:"NO_OF_API"`
+	APIRate      int    `yaml:"API_RATE"`
+	CollectorURL string `yaml:"COLLECTOR_URL"`
+}
+
+// RandomData generates a random JSON payload
+func RandomData() []byte {
+	data := map[string]interface{}{
+		"id":    rand.Intn(1000),
+		"value": rand.Float64() * 100,
+		"info":  fmt.Sprintf("RandomInfo%d", rand.Intn(100)),
+	}
+	jsonData, _ := json.Marshal(data)
+	return jsonData
+}
+
+// ReadConfig reads configuration from config.yaml as strings
+func ReadConfig() (string, string, string, error) {
+	data, err := os.ReadFile("config.yaml")
+	if err != nil {
+		return "", "", "", err
+	}
+
+	var rawConfig map[string]string
+	err = yaml.Unmarshal(data, &rawConfig)
+	if err != nil {
+		return "", "", "", err
+	}
+
+	return rawConfig["NO_OF_API"], rawConfig["API_RATE"], rawConfig["COLLECTOR_URL"], nil
+}
+
+// ConfigParser validates and converts configuration values
+func ConfigParser(apiCountStr, apiRateStr, collectorURL string) (int, int, string, error) {
+	apiCount, err := strconv.Atoi(apiCountStr)
+	if err != nil || apiCount <= 0 || apiCount > 8192 {
+		return 0, 0, "", fmt.Errorf("invalid NO_OF_API value")
+	}
+
+	apiRate, err := strconv.Atoi(apiRateStr)
+	if err != nil || apiRate <= 0 {
+		return 0, 0, "", fmt.Errorf("invalid API_RATE value")
+	}
+
+	if collectorURL == "" {
+		return 0, 0, "", fmt.Errorf("COLLECTOR_URL not set")
+	}
+
+	return apiCount, apiRate, collectorURL, nil
+}
+
+// Simulator generates API traffic with random data
+func Simulator(apiCount, apiRate int, collectorURL string) {
+	methods := []string{"GET", "POST", "PUT", "DELETE"}
+	randGen := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	var wg sync.WaitGroup
+
+	for i := 0; i < apiCount; i++ {
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+
+			method := methods[randGen.Intn(len(methods))]
+			client := &http.Client{}
+
+			var req *http.Request
+			var err error
+
+			if method == "POST" || method == "PUT" {
+				payload := RandomData()
+				req, err = http.NewRequest(method, collectorURL, bytes.NewBuffer(payload))
+				req.Header.Set("Content-Type", "application/json")
+			} else {
+				req, err = http.NewRequest(method, collectorURL, nil)
+			}
+
+			if err != nil {
+				fmt.Println("Error creating request:", err)
+				return
+			}
+
+			resp, err := client.Do(req)
+			if err != nil {
+				fmt.Println("Error sending request:", err)
+				return
+			}
+			defer resp.Body.Close()
+
+			fmt.Printf("%s request sent, status: %s, response size: %d bytes\n", method, resp.Status, resp.ContentLength)
+		}()
+
+		time.Sleep(time.Second / time.Duration(apiRate))
+	}
+
+	wg.Wait()
+}
+
+func main() {
+	apiCountStr, apiRateStr, collectorURL, err := ReadConfig()
+	if err != nil {
+		fmt.Println("Error reading config:", err)
+		return
+	}
+
+	apiCount, apiRate, collectorURL, err := ConfigParser(apiCountStr, apiRateStr, collectorURL)
+	if err != nil {
+		fmt.Println("Configuration error:", err)
+		return
+	}
+
+	fmt.Println("Starting Traffic Generator...")
+	Simulator(apiCount, apiRate, collectorURL)
+	fmt.Println("Traffic Generator finished.")
+}
+

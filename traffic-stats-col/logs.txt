@@ -1,0 +1,70 @@
+2025/03/21 04:55:35 ✅ Stored Data:
+ {
+  "method": "GET",
+  "url": "/collect",
+  "status_code": 200,
+  "request_size": 0
+}
+2025/03/21 04:55:35 ✅ Stored Data:
+ {
+  "method": "GET",
+  "url": "/collect",
+  "status_code": 200,
+  "request_size": 0
+}
+2025/03/21 04:55:35 ✅ Stored Data:
+ {
+  "method": "GET",
+  "url": "/collect",
+  "status_code": 200,
+  "request_size": 0
+}
+2025/03/21 04:55:36 ✅ Stored Data:
+ {
+  "method": "DELETE",
+  "url": "/collect",
+  "status_code": 200,
+  "request_size": 0
+}
+2025/03/21 04:55:36 ✅ Stored Data:
+ {
+  "method": "DELETE",
+  "url": "/collect",
+  "status_code": 200,
+  "request_size": 0
+}
+2025/03/21 04:55:36 ✅ Stored Data:
+ {
+  "method": "PUT",
+  "url": "/collect",
+  "status_code": 200,
+  "request_size": 59
+}
+2025/03/21 04:55:36 ✅ Stored Data:
+ {
+  "method": "POST",
+  "url": "/collect",
+  "status_code": 200,
+  "request_size": 58
+}
+2025/03/21 04:55:36 ✅ Stored Data:
+ {
+  "method": "DELETE",
+  "url": "/collect",
+  "status_code": 200,
+  "request_size": 0
+}
+2025/03/21 04:55:37 ✅ Stored Data:
+ {
+  "method": "PUT",
+  "url": "/collect",
+  "status_code": 200,
+  "request_size": 58
+}
+2025/03/21 04:55:37 ✅ Stored Data:
+ {
+  "method": "PUT",
+  "url": "/collect",
+  "status_code": 200,
+  "request_size": 58
+}
