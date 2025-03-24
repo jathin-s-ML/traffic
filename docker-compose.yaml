@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   postgres-db:
     image: postgres:latest
@@ -6,6 +8,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: traffic_data_20_mar
     ports:
       - "5432:5432"
     volumes:
@@ -13,13 +16,18 @@ services:
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     networks:
       - app_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 5
 
   traffic-stats-col:
     build: ./traffic-stats-col
     container_name: traffic-stats-col
     restart: always
     depends_on:
-      - postgres-db
+      postgres-db:
+        condition: service_healthy
     environment:
       DB_HOST: postgres-db
       DB_PORT: 5432
