@@ -77,3 +77,12 @@ func GetTrafficStats() (TrafficStats, error) {
 
 	return stats, nil
 }
+func TruncateTrafficLogs() error {
+	query := `TRUNCATE TABLE request_logs`
+	_, err := db.Exec(query)
+	if err != nil {
+		return fmt.Errorf("failed to truncate table: %v", err)
+	}
+	fmt.Println("Traffic logs table truncated successfully!")
+	return nil
+}

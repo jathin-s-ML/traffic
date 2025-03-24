@@ -1,0 +1,162 @@
+package main
+
+import (
+	"database/sql"
+	"fmt"
+	"log"
+	"os"
+	"testing"
+	"time"
+
+	_ "github.com/lib/pq"
+)
+
+var testDB *sql.DB
+func TestMain(m *testing.M) {
+	var err error
+
+	// Print environment variables for debugging
+	fmt.Println("DB_HOST:", os.Getenv("DB_HOST"))
+	fmt.Println("DB_PORT:", os.Getenv("DB_PORT"))
+	fmt.Println("DB_USER:", os.Getenv("DB_USER"))
+	fmt.Println("DB_PASSWORD:", os.Getenv("DB_PASSWORD"))
+	fmt.Println("DB_NAME:", os.Getenv("DB_NAME"))
+
+	// Get database connection details from environment variables
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+
+	// Debugging: Check if DB_PORT is empty
+	if dbPort == "" {
+		log.Fatal("DB_PORT is empty! Ensure the environment variable is set.")
+	}
+
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		dbHost, dbPort, dbUser, dbPassword, dbName)
+
+	testDB, err = sql.Open("postgres", dsn)
+	if err != nil {
+		log.Fatalf("Failed to connect to test database: %v", err)
+	}
+
+	// Run tests
+	code := m.Run()
+
+	// Close database connection
+	testDB.Close()
+
+	os.Exit(code)
+}
+
+// Helper function to clear the test table before each test
+func clearTestTable() {
+	_, err := testDB.Exec("TRUNCATE TABLE request_logs RESTART IDENTITY")
+	if err != nil {
+		log.Fatalf("Failed to clear test table: %v", err)
+	}
+}
+
+// Test inserting a log entry
+func TestInsertTrafficLog(t *testing.T) {
+	clearTestTable()
+
+	query := `INSERT INTO request_logs (method, url, request_size, created_at) VALUES ($1, $2, $3, $4) RETURNING id`
+	var id int
+	err := testDB.QueryRow(query, "GET", "/test", 100, time.Now()).Scan(&id)
+	if err != nil {
+		t.Fatalf("Failed to insert test log: %v", err)
+	}
+
+	if id == 0 {
+		t.Fatal("Expected a valid ID after insertion")
+	}
+}
+
+// Test retrieving logs
+func TestRetrieveLogs(t *testing.T) {
+	clearTestTable()
+
+	// Insert test data
+	_, err := testDB.Exec("INSERT INTO request_logs (method, url, request_size, created_at) VALUES ($1, $2, $3, $4)", "POST", "/log", 200, time.Now())
+	if err != nil {
+		t.Fatalf("Failed to insert test data: %v", err)
+	}
+
+	// Fetch logs
+	rows, err := testDB.Query("SELECT method, url, request_size FROM request_logs")
+	if err != nil {
+		t.Fatalf("Failed to retrieve logs: %v", err)
+	}
+	defer rows.Close()
+
+	var count int
+	for rows.Next() {
+		count++
+	}
+
+	if count == 0 {
+		t.Fatal("Expected at least one log entry in the database")
+	}
+}
+
+// Test retrieving stats
+func TestRetrieveStats(t *testing.T) {
+	clearTestTable()
+
+	// Insert test data
+	_, err := testDB.Exec("INSERT INTO request_logs (method, url, request_size) VALUES ('GET', '/home', 150), ('POST', '/submit', 250), ('GET', '/home', 100)")
+	if err != nil {
+		t.Fatalf("Failed to insert test data: %v", err)
+	}
+
+	// Get statistics
+	var totalRequests int
+	var mostUsedMethod string
+	var mostAccessedURL string
+	var avgRequestSize float64
+
+	query := `
+		SELECT COUNT(*) AS total_requests,
+		       (SELECT method FROM request_logs GROUP BY method ORDER BY COUNT(*) DESC LIMIT 1) AS most_used_method,
+		       (SELECT url FROM request_logs GROUP BY url ORDER BY COUNT(*) DESC LIMIT 1) AS most_accessed_url,
+		       AVG(request_size) AS avg_request_size
+		FROM request_logs;
+	`
+	err = testDB.QueryRow(query).Scan(&totalRequests, &mostUsedMethod, &mostAccessedURL, &avgRequestSize)
+	if err != nil {
+		t.Fatalf("Failed to retrieve stats: %v", err)
+	}
+
+	if totalRequests == 0 {
+		t.Fatal("Expected total_requests to be greater than 0")
+	}
+}
+
+// Test truncating the table
+func TestTruncateTable(t *testing.T) {
+	// Insert test data
+	_, err := testDB.Exec("INSERT INTO request_logs (method, url, request_size) VALUES ('DELETE', '/clear', 50)")
+	if err != nil {
+		t.Fatalf("Failed to insert test data: %v", err)
+	}
+
+	// Truncate table
+	_, err = testDB.Exec("TRUNCATE TABLE request_logs RESTART IDENTITY")
+	if err != nil {
+		t.Fatalf("Failed to truncate table: %v", err)
+	}
+
+	// Verify table is empty
+	var count int
+	err = testDB.QueryRow("SELECT COUNT(*) FROM request_logs").Scan(&count)
+	if err != nil {
+		t.Fatalf("Failed to count rows: %v", err)
+	}
+
+	if count != 0 {
+		t.Fatal("Expected 0 rows after truncation")
+	}
+}

@@ -90,3 +90,12 @@ func GetTrafficStatsHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(responseJSON)
 }
+func TruncateLogsHandler(w http.ResponseWriter, r *http.Request) {
+	err := TruncateTrafficLogs()
+	if err != nil {
+		http.Error(w, "Failed to truncate table", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Traffic logs table truncated successfully!"))
+}
