@@ -24,7 +24,8 @@ func main() {
 	http.HandleFunc("/logs", GetLogsHandler) // API to fetch stored logs
 	http.HandleFunc("/stats", GetTrafficStatsHandler) // New API to get statistics
 	http.HandleFunc("/truncate", TruncateLogsHandler) // New API to truncate logs
-	
+	http.HandleFunc("/logs/method", GetLogsByMethodHandler) // New API to fetch logs by method
+
 	fmt.Println("Traffic Stats Collector is running on port", cfg.Server.Port)
 	log.Fatal(http.ListenAndServe(":"+cfg.Server.Port, nil))
 }

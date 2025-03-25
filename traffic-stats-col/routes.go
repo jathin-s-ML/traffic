@@ -58,12 +58,20 @@ func CollectDataHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetLogsHandler(w http.ResponseWriter, r *http.Request) {
-	logs, err := GetTrafficLogs()
+	// Get query parameters for filtering
+	method := r.URL.Query().Get("method")
+	url := r.URL.Query().Get("url")
+	statusCode := r.URL.Query().Get("status")
+	requestSize := r.URL.Query().Get("byte_size")
+
+	// Fetch filtered logs from DB
+	logs, err := GetFilteredTrafficLogs(method, url, statusCode, requestSize)
 	if err != nil {
 		http.Error(w, "Failed to retrieve logs", http.StatusInternalServerError)
 		return
 	}
 
+	// Convert to JSON and return response
 	responseJSON, err := json.MarshalIndent(logs, "", "  ")
 	if err != nil {
 		http.Error(w, "Failed to format logs", http.StatusInternalServerError)
@@ -74,6 +82,7 @@ func GetLogsHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(responseJSON)
 }
+
 
 func GetTrafficStatsHandler(w http.ResponseWriter, r *http.Request) {
 	stats, err := GetTrafficStats()
@@ -98,4 +107,28 @@ func TruncateLogsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Traffic logs table truncated successfully!"))
+}
+func GetLogsByMethodHandler(w http.ResponseWriter, r *http.Request) {
+	// Get the method type from the query parameter
+	method := r.URL.Query().Get("method")
+	if method == "" {
+		http.Error(w, "Method query parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	logs, err := GetTrafficLogsByMethod(method)
+	if err != nil {
+		http.Error(w, "Failed to retrieve logs", http.StatusInternalServerError)
+		return
+	}
+
+	responseJSON, err := json.MarshalIndent(logs, "", "  ")
+	if err != nil {
+		http.Error(w, "Failed to format logs", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(responseJSON)
 }
