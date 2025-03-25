@@ -86,3 +86,64 @@ func TruncateTrafficLogs() error {
 	fmt.Println("Traffic logs table truncated successfully!")
 	return nil
 }
+func GetTrafficLogsByMethod(method string) ([]RequestLog, error) {
+	query := `SELECT method, url, status_code, request_size FROM request_logs WHERE method = $1`
+	rows, err := db.Query(query, method)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve data: %v", err)
+	}
+	defer rows.Close()
+
+	var logs []RequestLog
+	for rows.Next() {
+		var logEntry RequestLog
+		if err := rows.Scan(&logEntry.Method, &logEntry.URL, &logEntry.StatusCode, &logEntry.RequestSize); err != nil {
+			return nil, fmt.Errorf("failed to scan row: %v", err)
+		}
+		logs = append(logs, logEntry)
+	}
+
+	return logs, nil
+}
+func GetFilteredTrafficLogs(method, url, status, byteSize string) ([]RequestLog, error) {
+	query := `SELECT method, url, status_code, request_size FROM request_logs WHERE 1=1`
+	args := []interface{}{}
+	argIndex := 1
+	if method != "" {
+		query += fmt.Sprintf(" AND method = $%d", argIndex)
+		args = append(args, method)
+		argIndex++
+	}
+	if url != "" {
+		query += fmt.Sprintf(" AND url = $%d", argIndex)
+		args = append(args, url)
+		argIndex++
+	}
+	if status != "" {
+		query += fmt.Sprintf(" AND status_code = $%d", argIndex)
+		args = append(args, status)
+		argIndex++
+	}
+	if byteSize != "" {
+		query += fmt.Sprintf(" AND request_size = $%d", argIndex)
+		args = append(args, byteSize)
+		argIndex++
+	}
+
+	rows, err := db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve data: %v", err)
+	}
+	defer rows.Close()
+
+	var logs []RequestLog
+	for rows.Next() {
+		var logEntry RequestLog
+		if err := rows.Scan(&logEntry.Method, &logEntry.URL, &logEntry.StatusCode, &logEntry.RequestSize); err != nil {
+			return nil, fmt.Errorf("failed to scan row: %v", err)
+		}
+		logs = append(logs, logEntry)
+	}
+
+	return logs, nil
+}

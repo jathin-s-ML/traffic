@@ -1,0 +1,137 @@
+# Traffic Generator and Traffic Stats Collector
+
+A distributed system for generating API traffic, collecting request logs, and analyzing traffic statistics with **Docker-based deployment**.
+
+---
+
+## **Features**
+
+### **Traffic Generator**
+
+- Generates HTTP traffic with configurable request parameters.
+- Supports multiple HTTP methods (GET, POST, PUT, DELETE).
+- Sends requests to a specified target endpoint.
+- Configurable via `config.yaml`.
+
+### **Traffic Stats Collector**
+
+- Collects and stores API request logs.
+- Provides analytical statistics on traffic patterns.
+- Exposes API endpoints for data retrieval and filtering.
+- Stores data in a **PostgreSQL** database.
+- Supports truncating stored logs for fresh analysis.
+
+---
+
+## **API Endpoints**
+
+| Method | Endpoint                         | Description                        |
+| ------ | -------------------------------- | ---------------------------------- |
+| POST   | `/collect`                       | Collects traffic data              |
+| GET    | `/logs`                          | Retrieves all stored logs          |
+| GET    | `/logs/method?method=GET`        | Filters logs by HTTP method        |
+| GET    | `/stats`                         | Retrieves aggregated traffic stats |
+| POST   | `/truncate`                      | Clears all logs from the database  |
+| POST   | `/logs?byte_size=58&method=POST` | Filtering based on any combination |
+
+---
+
+## **Quick Start**
+
+### **Clone & Build the Project**
+
+```sh
+git clone https://github.com/jathin-s-ML/traffic.git
+cd traffic
+```
+
+### **Deploy with Docker**
+
+```sh
+# For a fresh rebuild:
+docker-compose up --build
+```
+
+```sh
+# To start services:
+docker-compose up -d
+```
+
+```sh
+# To shut down all services:
+docker-compose down
+```
+
+### **Database Access**
+
+Access the PostgreSQL database manually:
+
+```sh
+psql -h localhost -p 5432 -U traffic_user -d traffic_db
+
+```
+
+---
+
+## **Testing**
+
+### **Run Unit Tests (Shell)**
+
+```sh
+# Traffic Generator Tests
+cd traffic-generator
+go test -v ./...
+```
+
+```sh
+# Traffic Stats Collector Tests
+cd traffic-stats-col
+go test -v 
+```
+
+### **API Testing (Postman / cURL)**
+
+Retrieve All Collected Logs:
+
+```sh
+curl -X GET http://localhost:8080/logs
+```
+
+Retrieve Aggregated Traffic Stats:
+
+```sh
+curl -X GET http://localhost:8080/stats
+```
+
+Truncate Stored Logs:
+
+```sh
+curl -X POST http://localhost:8080/truncate
+```
+
+---
+
+## **Challenges Faced & Solutions**
+
+### **Database Connectivity Issues**
+
+- **Problem**: The database was not reachable (`i/o timeout`).
+- **Solution**: Ensured PostgreSQL container was running, updated `config.yaml` with the correct host, and verified network settings.
+
+### **Containerization & Deployment**
+
+- **Problem**: Services failed to communicate when deployed in Docker.
+- **Solution**: Used Docker Compose to define service dependencies and ensured proper network configuration.
+
+### **Data Persistence & API Reliability**
+
+- **Problem**: Logs were lost after container restarts.
+- **Solution**: Implemented persistent PostgreSQL storage using Docker volumes.
+
+---
+
+## **Ensure Before Running**
+
+- Docker and PostgreSQL are running.
+- All configurations are correctly set in `config.yaml`.
+- API can be tested using **Postman** or **cURL**.

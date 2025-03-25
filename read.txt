@@ -2,3 +2,13 @@
  docker exec -it postgres-container psql -U postgres -d traffic_data_20_mar
 
  SELECT * FROM request_logs;
+
+ to run the tesfile locate to traffic-stats-col and then run
+>>  go test -v
+
+to run the program use 
+docker-compose up or docker-compose up -d
+
+to shut down the program
+docker-compose down
+
