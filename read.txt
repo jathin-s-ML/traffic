@@ -12,3 +12,6 @@ docker-compose up or docker-compose up -d
 to shut down the program
 docker-compose down
 
+docker start postgres-db
+postgres-db
+docker exec -it postgres-db psql -U postgres -d traffic_data_20_mar

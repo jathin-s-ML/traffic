@@ -1,6 +1,5 @@
 database:
-  # host: "postgres-db"
-  host: "localhost"
+  host: "postgres-db"
   port: "5432"
   user: "postgres"
   password: "1234"

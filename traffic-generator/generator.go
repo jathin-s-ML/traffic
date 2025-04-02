@@ -15,7 +15,7 @@ func Simulator(apiCount int, interval time.Duration, collectorURL string) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			request := GetRandomRequest() // Get a random request type
+			request := GetRandomRequest() 
 
 			// Send request to collector
 			err := request.SendRequest(collectorURL)
@@ -23,9 +23,11 @@ func Simulator(apiCount int, interval time.Duration, collectorURL string) {
 				fmt.Println("Request error:", err)
 			}
 		}()
-		time.Sleep(interval) // Control request rate
+		time.Sleep(interval) 
 	}
 
 	wg.Wait() // Wait for all goroutines to finish
-	fmt.Printf("Total time taken: %v\n", time.Since(startTime))
+	// fmt.Printf("Total time taken: %v\n", time.Since(startTime))
+	fmt.Printf("Total time taken: %.2f seconds\n", time.Since(startTime).Seconds())
+
 }

@@ -75,7 +75,7 @@ func sendHTTPRequest(method, url string, body []byte) error {
 	// Write log entry to file
 	err = writeLog(logEntry)
 	if err != nil {
-		fmt.Println("❌ Error writing to log file:", err)
+		fmt.Println("Error writing to log file:", err)
 	}
 
 	return nil

@@ -9,7 +9,7 @@ func main() {
 	// Clear log file on restart
 	err := os.WriteFile("log.txt", []byte{}, 0644)
 	if err != nil {
-		fmt.Println("❌ Error clearing log file:", err)
+		fmt.Println("Error clearing log file:", err)
 		return
 	}
 
