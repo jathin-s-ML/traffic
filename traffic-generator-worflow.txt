@@ -1,0 +1,118 @@
+Traffic Generator: Function-wise Explanation & Workflow 🚀
+Your Traffic Generator project simulates API traffic by sending requests to the Traffic Stats Collector. Below is the function-wise breakdown and workflow of your project.
+
+1️⃣ config.go - Configuration Management
+📌 Purpose: Reads and parses configuration from config.yaml
+
+Functions in config.go
+Function	Purpose
+ReadConfig()	Reads config.yaml, unmarshals it, and returns a Config object.
+ConfigParser(rawConfig map[string]string)	Parses NO_OF_API, API_RATE, and COLLECTOR_URL, ensuring valid values.
+Workflow of config.go
+Reads the config.yaml file.
+
+Extracts values for API count, API rate, and Collector URL.
+
+Converts NO_OF_API to an integer.
+
+Parses API_RATE (e.g., "5/s" → interval calculation).
+
+Returns a Config object for use by the simulator.
+
+2️⃣ generator.go - Request Simulator
+📌 Purpose: Generates and sends API requests in parallel
+
+Functions in generator.go
+Function	Purpose
+Simulator(apiCount int, interval time.Duration, collectorURL string)	Generates apiCount requests at a fixed interval and sends them to collectorURL.
+Workflow of generator.go
+Creates a WaitGroup (wg) to manage concurrent requests.
+
+Loops apiCount times:
+
+Calls GetRandomRequest() to pick a request type.
+
+Sends the request using SendRequest(collectorURL).
+
+Waits for interval before sending the next request.
+
+Waits for all goroutines to complete.
+
+Prints total execution time.
+
+3️⃣ main.go - Entry Point
+📌 Purpose: Starts the traffic generator by reading the config and calling Simulator()
+
+Functions in main.go
+Function	Purpose
+main()	Clears log file, reads config, starts traffic generation.
+Workflow of main.go
+Clears log.txt (if it exists).
+
+Calls ReadConfig() to load configurations.
+
+Calls Simulator() to start generating traffic.
+
+Prints status messages.
+
+4️⃣ routes.go - API Request Handling
+📌 Purpose: Implements API request types and logs their execution
+
+Functions in routes.go
+Function	Purpose
+SendRequest(url string)	Sends HTTP request for each API type (GET, POST, PUT, DELETE).
+sendHTTPRequest(method, url string, body []byte)	Sends an HTTP request and logs details.
+writeLog(entry string)	Writes request/response details to log.txt.
+GetRandomRequest()	Returns a random API request type (GET, POST, PUT, or DELETE).
+Workflow of routes.go
+Randomly selects an API request type (GET, POST, PUT, DELETE).
+
+Calls sendHTTPRequest():
+
+Sends request.
+
+Logs request method, body size, response status.
+
+Writes log to log.txt.
+
+5️⃣ utils.go - Helper Functions
+📌 Purpose: Provides utility functions
+
+Functions in utils.go
+Function	Purpose
+RandomData()	Generates random JSON data for POST and PUT requests.
+Workflow of utils.go
+Creates random JSON { "id": <random>, "value": <random>, "info": <random> }
+
+Returns JSON as []byte.
+
+Overall Workflow of Traffic Generator 🏗️
+1️⃣ Configuration Loading (config.go)
+
+Reads config.yaml
+
+Extracts NO_OF_API, API_RATE, COLLECTOR_URL
+
+Converts them into usable formats
+
+2️⃣ Traffic Generation (generator.go)
+
+Calls Simulator(apiCount, interval, collectorURL)
+
+Spawns apiCount goroutines to send requests at fixed intervals
+
+3️⃣ Request Handling (routes.go)
+
+GetRandomRequest() selects a random request type
+
+Sends request via sendHTTPRequest()
+
+Logs details to log.txt
+
+4️⃣ Execution Control (main.go)
+
+Clears logs
+
+Reads config
+
+Calls Simulator()

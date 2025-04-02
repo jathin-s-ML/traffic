@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: traffic-generator
+spec:
+  type: {{ .Values.service.trafficGenerator.type }}
+  ports:
+    - port: {{ .Values.service.trafficGenerator.port }}
+      targetPort: 8081
+  selector:
+    app: traffic-generator
