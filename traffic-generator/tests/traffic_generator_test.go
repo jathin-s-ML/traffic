@@ -6,6 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"traffic-generator/config"
 )
 
 func TestTrafficGenerator(t *testing.T) {
@@ -15,8 +16,8 @@ func TestTrafficGenerator(t *testing.T) {
 
 var _ = Describe("ConfigParser", func() {
 	DescribeTable("parsing configuration",
-		func(rawConfig map[string]string, expectedConfig *Config, expectedError string) {
-			config, err := ConfigParser(rawConfig)
+		func(rawConfig map[string]string, expectedConfig *config.Config, expectedError string) {
+			config, err := config.ConfigParser(rawConfig)
 
 			if expectedError != "" {
 				Expect(err).To(HaveOccurred(), "Expected an error but got nil")
@@ -33,7 +34,7 @@ var _ = Describe("ConfigParser", func() {
 				"API_RATE":     "10/s",
 				"COLLECTOR_URL": "http://localhost:8080",
 			},
-			&Config{
+			&config.Config{
 				APICount:     100,
 				CollectorURL: "http://localhost:8080",
 				APIRate:      100 * time.Millisecond, 

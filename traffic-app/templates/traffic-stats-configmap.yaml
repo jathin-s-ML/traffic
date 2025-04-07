@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: traffic-stats-col-config
+data:
+  config.yaml: |
+    database:
+      host: "postgres"
+      port: "5432"
+      user: "{{ .Values.postgres.user }}"
+      password: "{{ .Values.postgres.password }}"
+      dbname: "{{ .Values.postgres.db }}"
+      sslmode: "disable"
+
+    server:
+      port: "{{ .Values.statsCollector.port }}"

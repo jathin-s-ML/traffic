@@ -1,0 +1,19 @@
+postgres:
+  image: postgres:latest
+  user: postgres
+  password: 1234
+  db: traffic_data_20_mar
+
+statsCollector:
+  image: traffic-stats-col:local
+  port: 8080
+  env:
+    DB_HOST: postgres  # ✅ This must match the name of the postgres service
+    DB_PORT: "5432"
+    DB_USER: postgres
+    DB_PASSWORD: "1234"
+    DB_NAME: traffic_data_20_mar
+
+trafficGenerator:
+  image: traffic-generator:local
+  apiUrl: "http://traffic-stats-col:8080/collect"  # ✅ Corrected service name

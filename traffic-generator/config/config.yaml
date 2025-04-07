@@ -1,0 +1,3 @@
+NO_OF_API: "10"
+API_RATE: "5/s"
+COLLECTOR_URL: "http://traffic-stats-collector:8080/collect"

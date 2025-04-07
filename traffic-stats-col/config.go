@@ -1,37 +1,43 @@
 package main
 
 import (
-	"gopkg.in/yaml.v2"
+	"fmt"
 	"os"
+
+	"gopkg.in/yaml.v2"
 )
 
-// Config struct holds server and database settings
+// Config holds the server and database configuration
 type Config struct {
-	Server struct {
-		Port string `yaml:"port"`
-	} `yaml:"server"`
-	Database struct {
-		Host     string `yaml:"host"`
-		Port     string `yaml:"port"`
-		User     string `yaml:"user"`
-		Password string `yaml:"password"`
-		DBName   string `yaml:"dbname"`
-		SSLMode  string `yaml:"sslmode"`
-	} `yaml:"database"`
+	Server   ServerConfig   `yaml:"server"`
+	Database DatabaseConfig `yaml:"database"`
 }
 
-// ReadConfig loads configuration from config.yaml
-func ReadConfig() (*Config, error) {
-	data, err := os.ReadFile("config.yaml")
+type ServerConfig struct {
+	Port string `yaml:"port"`
+}
+
+type DatabaseConfig struct {
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+	DBName   string `yaml:"dbname"`
+	SSLMode  string `yaml:"sslmode"`
+}
+
+// LoadConfig reads and parses config.yaml
+func LoadConfig(path string) (*Config, error) {
+	file, err := os.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to read config file: %w", err)
 	}
 
-	var config Config
-	err = yaml.Unmarshal(data, &config)
+	var cfg Config
+	err = yaml.Unmarshal(file, &cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to parse config file: %w", err)
 	}
 
-	return &config, nil
+	return &cfg, nil
 }

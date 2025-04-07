@@ -3,23 +3,17 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"go.uber.org/zap"
 
 	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 )
 
+// Global DB instance
 var db *sql.DB
-var logger *zap.Logger
 
+// ✅ Initialize Database Connection
 func InitDB(cfg *Config) {
 	var err error
-
-	// Initialize Uber Zap Logger
-	logger, err = zap.NewProduction()
-	if err != nil {
-		fmt.Println("Failed to initialize logger:", err)
-		return
-	}
 
 	psqlInfo := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
@@ -40,6 +34,7 @@ func InitDB(cfg *Config) {
 	logger.Info("Connected to PostgreSQL successfully")
 }
 
+// ✅ Insert a new traffic log
 func InsertTrafficLog(method, url string, statusCode, requestSize int) error {
 	query := `INSERT INTO request_logs (method, url, status_code, request_size) VALUES ($1, $2, $3, $4)`
 	_, err := db.Exec(query, method, url, statusCode, requestSize)
@@ -54,16 +49,17 @@ func InsertTrafficLog(method, url string, statusCode, requestSize int) error {
 		return fmt.Errorf("failed to insert data: %v", err)
 	}
 
-	logger.Info("Data inserted into database successfully",
-		zap.String("method", method),
-		zap.String("url", url),
-		zap.Int("status_code", statusCode),
-		zap.Int("request_size", requestSize),
-	)
+	// logger.Info("Data inserted into database successfully",
+	// 	zap.String("method", method),
+	// 	zap.String("url", url),
+	// 	zap.Int("status_code", statusCode),
+	// 	zap.Int("request_size", requestSize),
+	// )
 
 	return nil
 }
 
+// ✅ Retrieve traffic logs by HTTP method
 func GetTrafficLogsByMethod(method string) ([]RequestLog, error) {
 	query := `SELECT method, url, status_code, request_size FROM request_logs WHERE method = $1`
 	rows, err := db.Query(query, method)
@@ -87,6 +83,7 @@ func GetTrafficLogsByMethod(method string) ([]RequestLog, error) {
 	return logs, nil
 }
 
+// ✅ Retrieve paginated traffic logs
 func GetPaginatedTrafficLogs(method, url, status, byteSize string, page, limit int) ([]RequestLog, int, error) {
 	query := `SELECT method, url, status_code, request_size FROM request_logs WHERE 1=1`
 	countQuery := `SELECT COUNT(*) FROM request_logs WHERE 1=1`
@@ -149,6 +146,7 @@ func GetPaginatedTrafficLogs(method, url, status, byteSize string, page, limit i
 	return logs, totalLogs, nil
 }
 
+// ✅ Retrieve traffic statistics
 func GetTrafficStats() (TrafficStats, error) {
 	var stats TrafficStats
 
@@ -177,6 +175,7 @@ func GetTrafficStats() (TrafficStats, error) {
 	return stats, nil
 }
 
+// ✅ Truncate the traffic logs table
 func TruncateTrafficLogs() error {
 	query := `TRUNCATE TABLE request_logs`
 	_, err := db.Exec(query)

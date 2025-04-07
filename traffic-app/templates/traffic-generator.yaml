@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: traffic-generator
+spec:
+  template:
+    spec:
+      containers:
+        - name: traffic-generator
+          image: {{ .Values.trafficGenerator.image }}
+          env:
+            - name: API_URL
+              value: {{ .Values.trafficGenerator.apiUrl | quote }}
+      restartPolicy: Never

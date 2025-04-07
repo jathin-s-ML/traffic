@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: traffic-stats-col
+spec:
+  selector:
+    app: traffic-stats-col
+  ports:
+    - port: {{ .Values.statsCollector.port }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traffic-stats-col
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: traffic-stats-col
+  template:
+    metadata:
+      labels:
+        app: traffic-stats-col
+    spec:
+      containers:
+        - name: traffic-stats-col
+          image: "{{ .Values.statsCollector.image }}"
+          ports:
+            - containerPort: {{ .Values.statsCollector.port }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config.yaml
+              subPath: config.yaml
+      volumes:
+        - name: config-volume
+          configMap:
+            name: traffic-stats-col-config

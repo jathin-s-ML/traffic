@@ -2,7 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
+
+	"traffic-generator/config"
+	"traffic-generator/generator"
 )
 
 func main() {
@@ -13,13 +17,13 @@ func main() {
 		return
 	}
 
-	config, err := ReadConfig()
+	// Load Configuration
+	cfg, err := config.ReadConfig() // ✅ Rename local variable to `cfg`
 	if err != nil {
-		fmt.Println("Error reading config:", err)
-		return
+		log.Fatalf("Error reading config: %v", err)
 	}
 
 	fmt.Println("Starting Traffic Generator...")
-	Simulator(config.APICount, config.APIRate, config.CollectorURL)
+	generator.Simulator(cfg.APICount, cfg.APIRate, cfg.CollectorURL) // ✅ Use `generator.Simulator`
 	fmt.Println("Traffic Generator finished.")
 }

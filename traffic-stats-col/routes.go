@@ -5,7 +5,6 @@ import (
 	"go.uber.org/zap"
 	"io"
 	"net/http"
-	// "os"
 	"strconv"
 )
 
@@ -42,17 +41,18 @@ func CollectDataHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = InsertTrafficLog(logEntry.Method, logEntry.URL, logEntry.StatusCode, logEntry.RequestSize)
 	if err != nil {
-		logger.Error("Error inserting data into database", zap.Error(err))
+		logger.Error("Database insertion failed", zap.Error(err))
 		sendJSONResponse(w, map[string]interface{}{"error": "Database error"}, http.StatusInternalServerError)
 		return
 	}
 
-	logger.Info("Data received and stored",
-		zap.String("method", logEntry.Method),
-		zap.String("url", logEntry.URL),
-		zap.Int("status_code", logEntry.StatusCode),
-		zap.Int("request_size", logEntry.RequestSize),
-	)
+	logger.Info("",
+    zap.String("method", logEntry.Method),
+    zap.String("url", logEntry.URL),
+    zap.Int("status_code", logEntry.StatusCode),
+    zap.Int("request_size", logEntry.RequestSize),
+)
+
 
 	sendJSONResponse(w, map[string]interface{}{"message": "Data received"}, http.StatusOK)
 }
@@ -69,11 +69,11 @@ func GetLogsHandler(w http.ResponseWriter, r *http.Request) {
 	logs, totalLogs, err := GetPaginatedTrafficLogs(method, url, status, byteSize, page, limit)
 	if err != nil {
 		logger.Error("Failed to retrieve logs", zap.Error(err))
-		http.Error(w, "Failed to retrieve logs", http.StatusInternalServerError)
+		sendJSONResponse(w, map[string]interface{}{"error": "Failed to retrieve logs"}, http.StatusInternalServerError)
 		return
 	}
 
-	logger.Info("Logs retrieved",
+	logger.Info("Logs retrieved successfully",
 		zap.Int("total_logs", totalLogs),
 		zap.Int("page", page),
 		zap.Int("limit", limit),
@@ -91,19 +91,22 @@ func GetLogsHandler(w http.ResponseWriter, r *http.Request) {
 func GetLogsByMethodHandler(w http.ResponseWriter, r *http.Request) {
 	method := r.URL.Query().Get("method")
 	if method == "" {
-		logger.Warn("Method query parameter is missing")
+		logger.Warn("Missing query parameter", zap.String("parameter", "method"))
 		sendJSONResponse(w, map[string]interface{}{"error": "Method query parameter is required"}, http.StatusBadRequest)
 		return
 	}
 
 	logs, err := GetTrafficLogsByMethod(method)
 	if err != nil {
-		logger.Error("Failed to retrieve logs by method", zap.Error(err))
+		logger.Error("Failed to retrieve logs by method", zap.String("method", method), zap.Error(err))
 		sendJSONResponse(w, map[string]interface{}{"error": "Failed to retrieve logs"}, http.StatusInternalServerError)
 		return
 	}
 
-	logger.Info("Logs retrieved by method", zap.String("method", method), zap.Int("log_count", len(logs)))
+	logger.Info("Logs retrieved by method",
+		zap.String("method", method),
+		zap.Int("log_count", len(logs)),
+	)
 
 	sendJSONResponse(w, map[string]interface{}{"logs": logs}, http.StatusOK)
 }
@@ -113,11 +116,11 @@ func GetTrafficStatsHandler(w http.ResponseWriter, r *http.Request) {
 	stats, err := GetTrafficStats()
 	if err != nil {
 		logger.Error("Failed to retrieve traffic statistics", zap.Error(err))
-		http.Error(w, "Failed to retrieve statistics", http.StatusInternalServerError)
+		sendJSONResponse(w, map[string]interface{}{"error": "Failed to retrieve statistics"}, http.StatusInternalServerError)
 		return
 	}
 
-	logger.Info("Traffic stats retrieved",
+	logger.Info("Traffic statistics retrieved successfully",
 		zap.Int("total_requests", stats.TotalRequests),
 		zap.String("most_used_method", stats.MostUsedMethod),
 		zap.String("most_accessed_url", stats.MostAccessedURL),
@@ -135,12 +138,16 @@ func getPaginationParams(r *http.Request) (int, int) {
 	if p := r.URL.Query().Get("page"); p != "" {
 		if parsedPage, err := strconv.Atoi(p); err == nil && parsedPage > 0 {
 			page = parsedPage
+		} else {
+			logger.Warn("Invalid page parameter, defaulting to 1", zap.String("provided_page", p))
 		}
 	}
 
 	if l := r.URL.Query().Get("limit"); l != "" {
 		if parsedLimit, err := strconv.Atoi(l); err == nil && parsedLimit > 0 {
 			limit = parsedLimit
+		} else {
+			logger.Warn("Invalid limit parameter, defaulting to 10", zap.String("provided_limit", l))
 		}
 	}
 
